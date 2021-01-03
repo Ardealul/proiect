@@ -86,8 +86,6 @@ function createShader(gl, type, source) {
     if (success) {
         return shader;
     }
-
-    console.log(gl.getShaderInfoLog(shader));  // eslint-disable-line
     gl.deleteShader(shader);
     return undefined;
 }
@@ -101,8 +99,6 @@ function createProgram(gl, vertexShader, fragmentShader) {
     if (success) {
         return program;
     }
-
-    console.log(gl.getProgramInfoLog(program));  // eslint-disable-line
     gl.deleteProgram(program);
     return undefined;
 }
@@ -156,10 +152,7 @@ function webglContext(foodArray, player1Array, player2Array) {
     var normalize = false; // don't normalize the data
     var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
     var offset = 0;        // start at the beginning of the buffer
-    gl.vertexAttribPointer(
-        positionAttributeLocation, size, type, normalize, stride, offset);
-
-    //webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+    gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset);
 
     // Tell WebGL how to convert from clip space to pixels
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -178,32 +171,13 @@ function webglContext(foodArray, player1Array, player2Array) {
     // pixels to clipspace in the shader
     gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
 
-    // draw 50 random rectangles in random colors
-    /*
-    for (var ii = 0; ii < 50; ++ii) {
-        // Put a rectangle in the position buffer
-        setRectangle(
-            gl, randomInt(300), randomInt(300), randomInt(300), randomInt(300));
-
-        // Set a random color.
-        gl.uniform4f(colorLocation, Math.random(), Math.random(), Math.random(), 1);
-
-        // Draw the rectangle.
-        var primitiveType = gl.TRIANGLES;
-        var offset = 0;
-        var count = 6;
-        gl.drawArrays(primitiveType, offset, count);
-    }
-    */
-
     var foodColor = [1.0, 0.1, 0.1, 1.0];
     var player1Color = [0.1, 1.0, 0.1, 1.0];
     var player2Color = [0.1, 0.1, 1.0, 1.0];
 
-
     //draw food
 
-    setRectangle(gl, foodArray[0], foodArray[1]);
+    addSquare(gl, foodArray[0], foodArray[1]);
 
     gl.uniform4f(colorLocation, foodColor[0], foodColor[1], foodColor[2], foodColor[3]);
     var primitiveType = gl.TRIANGLES;
@@ -214,45 +188,37 @@ function webglContext(foodArray, player1Array, player2Array) {
     //draw player1
 
     for(var i = 0; i < player1Array.length; i += 2){
-      setRectangle(gl, player1Array[i], player1Array[i+1]);
+      addSquare(gl, player1Array[i], player1Array[i+1]);
 
       gl.uniform4f(colorLocation, player1Color[0], player1Color[1], player1Color[2], player1Color[3]);
-      var primitiveType = gl.TRIANGLES;
-      var offset = 0;
-      var count = 6;
       gl.drawArrays(primitiveType, offset, count);
     }
 
     //draw player2
 
     for(var i = 0; i < player2Array.length; i += 2){
-      setRectangle(gl, player2Array[i], player2Array[i+1]);
+      addSquare(gl, player2Array[i], player2Array[i+1]);
 
       gl.uniform4f(colorLocation, player2Color[0], player2Color[1], player2Color[2], player2Color[3]);
-      var primitiveType = gl.TRIANGLES;
-      var offset = 0;
-      var count = 6;
       gl.drawArrays(primitiveType, offset, count);
     }
 }
 
 // Fill the buffer with the values that define a rectangle.
-function setRectangle(gl, x, y) {
+function addSquare(gl, x, y) {
     var x1 = x;
-    var x2 = x + 30;
+    var x2 = x + 30;    //30 = width and height of the point 
     var y1 = y;
     var y2 = y + 30;
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
         x1, y1, //0 , 0
-        x2, y1, //20, 0
-        x1, y2, //0, 20
-        x1, y2, //0, 20
-        x2, y1, //20, 0
-        x2, y2, //20, 20
+        x2, y1, //30, 0
+        x1, y2, //0, 30
+        x1, y2, //0, 30
+        x2, y1, //30, 0
+        x2, y2, //30, 30
     ]), gl.STATIC_DRAW);
 }
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 function init() {
   initialScreen.style.display = "none";
@@ -263,7 +229,7 @@ function init() {
   var foodArray = [];
   var player1Array = [];
   var player2Array = [];
-  webglContext(foodArray,player1Array,player2Array);
+  webglContext(foodArray, player1Array, player2Array);
 
   document.addEventListener('keydown', keydown);
   gameActive = true;
@@ -280,13 +246,11 @@ function paintGame(state) {
   var foodArray = [];
   var player1Array = [];
   var player2Array = [];
-  //webglContext(foodArray,player1Array,player2Array);
 
   const food = state.food;
-  //const gridsize = state.gridsize;
-  //const size = canvas.width / gridsize;
-    const gridsize = state.gridsize;
-    const size = 600 / gridsize;
+  const gridsize = state.gridsize;
+  const size = 600 / gridsize;  // 600 = te size of canvas
+
   //ctx.fillStyle = FOOD_COLOUR;
   //ctx.fillRect(food.x * size, food.y * size, size, size);
 
@@ -306,19 +270,6 @@ function paintGame(state) {
   }
   
   webglContext(foodArray,player1Array,player2Array);
-  
-
-  //paintPlayer(state.players[0], size, SNAKE_COLOUR);
-  //paintPlayer(state.players[1], size, 'red');
-}
-
-function paintPlayer(playerState, size, colour) {
-  const snake = playerState.snake;
-
-  ctx.fillStyle = colour;
-  for (let cell of snake) {
-    ctx.fillRect(cell.x * size, cell.y * size, size, size);
-  }
 }
 
 function handleInit(number) {
